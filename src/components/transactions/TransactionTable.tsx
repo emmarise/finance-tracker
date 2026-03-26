@@ -40,7 +40,7 @@ export function TransactionTable({
                   <td className="p-3 text-muted-foreground whitespace-nowrap">
                     {t.transaction_date}
                     <span className="ml-1 text-xs">
-                      {new Date(t.transaction_date + "T00:00:00").toLocaleDateString("zh-CN", { weekday: "short" })}
+                      {new Date(t.transaction_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" })}
                     </span>
                   </td>
                   <td className="p-3">{t.description}</td>

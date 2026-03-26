@@ -80,11 +80,10 @@ export async function POST(request: Request) {
   }
 
   // Build confirmation message
-  const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
   const lines = (inserted ?? []).map((t) => {
     const d = new Date(t.transaction_date + "T00:00:00");
-    const day = weekdays[d.getDay()];
-    return `${t.transaction_date} 周${day} ${t.type === "income" ? "+" : "-"}$${Number(t.amount).toFixed(2)} ${t.description} (${t.category?.name ?? "Uncategorized"})`;
+    const day = d.toLocaleDateString("en-US", { weekday: "short" });
+    return `${t.transaction_date} ${day} ${t.type === "income" ? "+" : "-"}$${Number(t.amount).toFixed(2)} ${t.description} (${t.category?.name ?? "Uncategorized"})`;
   });
   const reply = `Added ${lines.length} transaction${lines.length > 1 ? "s" : ""}:\n${lines.join("\n")}`;
 
