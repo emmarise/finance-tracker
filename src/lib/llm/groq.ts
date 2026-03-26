@@ -23,7 +23,7 @@ export async function callGroq(
       { role: "user", content: userMessage },
     ],
     temperature: 0.1,
-    max_tokens: 1024,
+    max_tokens: 2048,
     response_format: { type: "json_object" },
   });
   return completion.choices[0]?.message?.content ?? "{}";
