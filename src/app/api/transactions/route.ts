@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const start = searchParams.get("start");
   const end = searchParams.get("end");
+  const search = searchParams.get("search");
   const limit = parseInt(searchParams.get("limit") ?? "50");
   const offset = parseInt(searchParams.get("offset") ?? "0");
 
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
 
   if (start) query = query.gte("transaction_date", start);
   if (end) query = query.lte("transaction_date", end);
+  if (search) query = query.ilike("description", `%${search}%`);
 
   const { data, count, error } = await query;
   if (error) {

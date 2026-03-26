@@ -49,19 +49,25 @@ export function ChatPanel() {
     setLoading(true);
 
     try {
-      // Determine intent: delete/undo, question, or new transaction
+      // Determine intent: correction, delete/undo, question, or new transaction
+      const isCorrection =
+        /\b(no[,.]?\s*(that|it|the last)|wrong|not correct|incorrect|should (be|have been)|actually it was|that was|fix (it|that|the last)|更正|改成|不对|错了)\b/i.test(text);
       const isDelete =
+        !isCorrection &&
         /\b(undo|revert|delete|remove|取消|撤销|删除)\b/i.test(text);
       const isQuestion =
         !isDelete &&
+        !isCorrection &&
         /\?|how much|what|which|show|compare|trend|top|ratio|average|total/i.test(
           text
         );
-      const endpoint = isDelete
-        ? "/api/chat/delete"
-        : isQuestion
-          ? "/api/chat/ask"
-          : "/api/chat/parse";
+      const endpoint = isCorrection
+        ? "/api/chat/correct"
+        : isDelete
+          ? "/api/chat/delete"
+          : isQuestion
+            ? "/api/chat/ask"
+            : "/api/chat/parse";
 
       const res = await fetch(endpoint, {
         method: "POST",

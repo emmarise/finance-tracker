@@ -6,7 +6,8 @@ import { LoginPage } from "@/components/LoginPage";
 import { NavBar } from "@/components/NavBar";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Download, Search } from "lucide-react";
 import type { Transaction, Category } from "@/lib/supabase/types";
 
 export default function TransactionsPage() {
@@ -15,18 +16,22 @@ export default function TransactionsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
+  const [search, setSearch] = useState("");
   const limit = 50;
 
   const fetchTransactions = useCallback(async () => {
-    const res = await fetch(
-      `/api/transactions?limit=${limit}&offset=${offset}`
-    );
+    const params = new URLSearchParams({
+      limit: String(limit),
+      offset: String(offset),
+    });
+    if (search) params.set("search", search);
+    const res = await fetch(`/api/transactions?${params}`);
     if (res.ok) {
       const data = await res.json();
       setTransactions(data.transactions);
       setTotal(data.total);
     }
-  }, [offset]);
+  }, [offset, search]);
 
   const fetchCategories = useCallback(async () => {
     const { createClient } = await import("@/lib/supabase/client");
@@ -101,6 +106,19 @@ export default function TransactionsPage() {
               <Download className="h-4 w-4 mr-1" />
               Export CSV
             </Button>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search transactions..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setOffset(0);
+              }}
+              className="pl-9"
+            />
           </div>
 
           <TransactionTable
