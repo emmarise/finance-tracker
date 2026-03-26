@@ -38,6 +38,8 @@ export function EditDialog({
   );
   const [date, setDate] = useState(transaction.transaction_date);
 
+  const selectedCategory = categories.find((c) => c.id === categoryId);
+
   const handleSave = () => {
     onSave({
       description,
@@ -86,19 +88,24 @@ export function EditDialog({
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium">Category</label>
-            <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "")}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.icon} {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className="text-sm font-medium mb-2 block">Category</label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCategoryId(c.id)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm transition-colors ${
+                    categoryId === c.id
+                      ? "bg-foreground text-background"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  <span>{c.icon}</span>
+                  <span>{c.name}</span>
+                </button>
+              ))}
+            </div>
           </div>
           <div>
             <label className="text-sm font-medium">Date</label>
