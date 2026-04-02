@@ -72,7 +72,7 @@ export function ChatPanel() {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }),
       });
 
       const data = await res.json();

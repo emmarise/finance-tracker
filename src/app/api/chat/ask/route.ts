@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { message } = await request.json();
+  const { message, timezone } = await request.json();
   if (!message || typeof message !== "string") {
     return NextResponse.json({ error: "Message required" }, { status: 400 });
   }
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   const categoryNames = (categories ?? []).map((c) => c.name);
 
   try {
-    const prompt = buildAskPrompt(categoryNames);
+    const prompt = buildAskPrompt(categoryNames, timezone);
     const response = await callGroq(prompt, message);
     const json = JSON.parse(response);
     const spec = askQuerySpecSchema.parse(json);

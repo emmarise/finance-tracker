@@ -1,6 +1,10 @@
-export function buildParsePrompt(categoryNames: string[]): string {
-  const today = new Date().toISOString().split("T")[0];
-  const currentYear = new Date().getFullYear();
+export function getLocalDate(timezone?: string): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: timezone || "UTC" });
+}
+
+export function buildParsePrompt(categoryNames: string[], timezone?: string): string {
+  const today = getLocalDate(timezone);
+  const currentYear = Number(today.split("-")[0]);
   return `You are a financial transaction parser. Parse the user's natural language input into structured transactions.
 
 Available categories: ${categoryNames.join(", ")}

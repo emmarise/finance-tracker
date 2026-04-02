@@ -1,5 +1,7 @@
-export function buildAskPrompt(categoryNames: string[]): string {
-  const today = new Date().toISOString().split("T")[0];
+import { getLocalDate } from "./parse-prompt";
+
+export function buildAskPrompt(categoryNames: string[], timezone?: string): string {
+  const today = getLocalDate(timezone);
   const currentMonth = today.substring(0, 7);
   const [year, month] = currentMonth.split("-").map(Number);
   const lastDay = new Date(year, month, 0).getDate();

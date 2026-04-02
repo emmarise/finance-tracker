@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { callGroq } from "@/lib/llm/groq";
-import { buildParsePrompt } from "@/lib/llm/parse-prompt";
+import { buildParsePrompt, getLocalDate } from "@/lib/llm/parse-prompt";
 import { parsedTransactionsSchema } from "@/lib/schemas/transaction";
 import { fallbackParse } from "@/lib/llm/fallback-parser";
 
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { message } = await request.json();
+  const { message, timezone } = await request.json();
   if (!message || typeof message !== "string") {
     return NextResponse.json({ error: "Message required" }, { status: 400 });
   }
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   let parsed;
   try {
-    const prompt = buildParsePrompt(categoryNames);
+    const prompt = buildParsePrompt(categoryNames, timezone);
     const response = await callGroq(prompt, message);
     const json = JSON.parse(response);
     parsed = parsedTransactionsSchema.parse(json);
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     amount: t.amount,
     type: t.type,
     description: t.description,
-    transaction_date: t.date || new Date().toISOString().split("T")[0],
+    transaction_date: t.date || getLocalDate(timezone),
     category_id: categoryMap.get(t.category.toLowerCase()) ?? null,
     raw_input: message,
   }));
