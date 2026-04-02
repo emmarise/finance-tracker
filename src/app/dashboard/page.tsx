@@ -17,36 +17,67 @@ import {
   endOfMonth,
   startOfYear,
   endOfYear,
+  addWeeks,
+  addMonths,
+  addYears,
   format,
 } from "date-fns";
 import type { SpendingByCategory } from "@/lib/supabase/types";
 
 type Period = "week" | "month" | "year";
 
-function getPeriodDates(period: Period) {
+function getOffsetDate(period: Period, offset: number) {
   const now = new Date();
   switch (period) {
     case "week":
+      return addWeeks(now, offset);
+    case "month":
+      return addMonths(now, offset);
+    case "year":
+      return addYears(now, offset);
+  }
+}
+
+function getPeriodDates(period: Period, offset: number) {
+  const ref = getOffsetDate(period, offset);
+  switch (period) {
+    case "week":
       return {
-        start: format(startOfWeek(now), "yyyy-MM-dd"),
-        end: format(endOfWeek(now), "yyyy-MM-dd"),
+        start: format(startOfWeek(ref), "yyyy-MM-dd"),
+        end: format(endOfWeek(ref), "yyyy-MM-dd"),
       };
     case "month":
       return {
-        start: format(startOfMonth(now), "yyyy-MM-dd"),
-        end: format(endOfMonth(now), "yyyy-MM-dd"),
+        start: format(startOfMonth(ref), "yyyy-MM-dd"),
+        end: format(endOfMonth(ref), "yyyy-MM-dd"),
       };
     case "year":
       return {
-        start: format(startOfYear(now), "yyyy-MM-dd"),
-        end: format(endOfYear(now), "yyyy-MM-dd"),
+        start: format(startOfYear(ref), "yyyy-MM-dd"),
+        end: format(endOfYear(ref), "yyyy-MM-dd"),
       };
+  }
+}
+
+function getPeriodLabel(period: Period, offset: number) {
+  const ref = getOffsetDate(period, offset);
+  switch (period) {
+    case "week": {
+      const ws = startOfWeek(ref);
+      const we = endOfWeek(ref);
+      return `${format(ws, "MMM d")} – ${format(we, "MMM d, yyyy")}`;
+    }
+    case "month":
+      return format(ref, "MMMM yyyy");
+    case "year":
+      return format(ref, "yyyy");
   }
 }
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const [period, setPeriod] = useState<Period>("month");
+  const [offset, setOffset] = useState(0);
   const [data, setData] = useState<{
     categories: SpendingByCategory[];
     totalExpenses: number;
@@ -59,10 +90,10 @@ export default function DashboardPage() {
   const [askLoading, setAskLoading] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
-    const { start, end } = getPeriodDates(period);
+    const { start, end } = getPeriodDates(period, offset);
     const res = await fetch(`/api/dashboard?start=${start}&end=${end}`);
     if (res.ok) setData(await res.json());
-  }, [period]);
+  }, [period, offset]);
 
   useEffect(() => {
     if (user) fetchDashboard();
@@ -106,12 +137,42 @@ export default function DashboardPage() {
                   key={p}
                   variant={period === p ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setPeriod(p)}
+                  onClick={() => { setPeriod(p); setOffset(0); }}
                 >
                   {p.charAt(0).toUpperCase() + p.slice(1)}
                 </Button>
               ))}
             </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setOffset((o) => o - 1)}
+            >
+              ←
+            </Button>
+            <span className="text-sm font-medium min-w-[180px] text-center">
+              {getPeriodLabel(period, offset)}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setOffset((o) => o + 1)}
+              disabled={offset >= 0}
+            >
+              →
+            </Button>
+            {offset !== 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setOffset(0)}
+              >
+                Today
+              </Button>
+            )}
           </div>
 
           {data && (
